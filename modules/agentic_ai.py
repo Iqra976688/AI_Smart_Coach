@@ -1,6 +1,5 @@
-# ---------------- Agentic AI Module ----------------
-# This module decides the next exercise/action for the user
-# Compatible with external pose detection / RAG feedback modules
+# ---------------- Complete Agentic AI Module ----------------
+# Handles adaptive exercise decisions, feedback, motivation, streaks, rest, reminders, and safety alerts
 
 import random
 from datetime import datetime, timedelta
@@ -19,34 +18,40 @@ class AgenticAI:
         self.exercise_list = exercise_list
         self.feedback_messages = feedback_messages
         self.motivational_messages = motivational_messages
-        self.user_progress = {}  # user_id -> dict of last exercise data
-        self.daily_streaks = {}  # user_id -> number of days exercised
-        self.last_session_time = {}  # user_id -> datetime of last session
+        self.user_progress = {}        # user_id -> dict of last exercise data
+        self.daily_streaks = {}        # user_id -> consecutive active days
+        self.last_session_time = {}    # user_id -> datetime of last session
 
-    def update_progress(self, user_id, exercise_name, performance_score):
+    # ---------------- Update User Progress ----------------
+    def update_progress(self, user_id, exercise_name, performance_score, unsafe=False):
         """
-        performance_score: 0-100 (from pose+RAG feedback)
+        performance_score: 0-100
+        unsafe: True if pose detection detects unsafe movement
         """
         self.user_progress[user_id] = {
             "exercise": exercise_name,
             "score": performance_score,
-            "timestamp": datetime.now()
+            "timestamp": datetime.now(),
+            "unsafe": unsafe
         }
 
         # Update streak
         last_time = self.last_session_time.get(user_id)
         if last_time:
-            if (datetime.now() - last_time).days == 1:
+            days_since_last = (datetime.now() - last_time).days
+            if days_since_last == 1:
                 self.daily_streaks[user_id] += 1
-            elif (datetime.now() - last_time).days > 1:
+            elif days_since_last > 1:
                 self.daily_streaks[user_id] = 1
         else:
             self.daily_streaks[user_id] = 1
+
         self.last_session_time[user_id] = datetime.now()
 
+    # ---------------- Decide Next Exercise ----------------
     def choose_next_exercise(self, user_id):
         """
-        Decide next exercise based on last performance and streak
+        Adaptive exercise selection based on last performance
         """
         if user_id not in self.user_progress:
             # First exercise: choose easiest
@@ -59,25 +64,24 @@ class AgenticAI:
             )
 
             if last_score >= 80:
-                # Improve difficulty slightly
+                # Increase difficulty
                 candidates = [ex for ex in self.exercise_list if ex["difficulty"] == last_difficulty + 1]
                 if not candidates:
                     candidates = [ex for ex in self.exercise_list if ex["difficulty"] == last_difficulty]
             elif last_score < 50:
-                # Suggest same or easier exercise
+                # Easier or same exercise
                 candidates = [ex for ex in self.exercise_list if ex["difficulty"] <= last_difficulty]
             else:
+                # Same difficulty
                 candidates = [ex for ex in self.exercise_list if ex["difficulty"] == last_difficulty]
 
         next_exercise = random.choice(candidates)
         return next_exercise
 
+    # ---------------- Provide Feedback and Motivation ----------------
     def get_feedback(self, user_id):
-        """
-        Return a random motivational message and last exercise feedback
-        """
         messages = []
-        # Feedback from last exercise
+        # Last exercise feedback
         if user_id in self.user_progress:
             last_exercise = self.user_progress[user_id]["exercise"]
             exercise_feedback = self.feedback_messages.get(last_exercise, [])
@@ -88,41 +92,24 @@ class AgenticAI:
         messages.append(random.choice(self.motivational_messages))
         return messages
 
+    # ---------------- Check if Rest Needed ----------------
     def check_rest_needed(self, user_id):
-        """
-        Suggest rest if last session too short (demo threshold)
-        """
         if user_id in self.last_session_time:
             elapsed = datetime.now() - self.last_session_time[user_id]
             if elapsed < timedelta(minutes=5):  # demo threshold
                 return True
         return False
 
+    # ---------------- Missed-Day Reminder ----------------
+    def get_reminder(self, user_id):
+        last_time = self.last_session_time.get(user_id)
+        if last_time and (datetime.now() - last_time).days > 1:
+            return f"Hey {user_id}, you missed a day! Let's get back to it!"
+        return None
 
-# ---------------- Example Usage ----------------
-if __name__ == "__main__":
-    exercises = [
-        {"name": "Squat", "difficulty": 1, "duration": 30},
-        {"name": "Push-Up", "difficulty": 1, "duration": 20},
-        {"name": "Plank", "difficulty": 2, "duration": 40},
-        {"name": "Lunge", "difficulty": 2, "duration": 25},
-    ]
-
-    feedback_messages = {
-        "Squat": ["Keep your knees aligned and push hips back.", "Engage core to maintain posture."],
-        "Push-Up": ["Keep your hips straight.", "Elbows should not flare out."],
-    }
-
-    motivational_messages = ["Great job! Keep it up!", "You're improving every session!"]
-
-    agent = AgenticAI(exercises, feedback_messages, motivational_messages)
-
-    user_id = "user123"
-    agent.update_progress(user_id, "Squat", performance_score=85)
-    next_ex = agent.choose_next_exercise(user_id)
-    feedback = agent.get_feedback(user_id)
-    rest_needed = agent.check_rest_needed(user_id)
-
-    print("Next Exercise:", next_ex)
-    print("Feedback:", feedback)
-    print("Rest Needed:", rest_needed)
+    # ---------------- Safety Alert ----------------
+    def check_safety(self, user_id):
+        if user_id in self.user_progress:
+            if self.user_progress[user_id].get("unsafe"):
+                return "Unsafe movement detected! Please correct your form or stop."
+        return None
