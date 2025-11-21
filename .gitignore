@@ -1,0 +1,82 @@
+.venv/
+venv/
+env/
+ENV/
+venv.bak/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# dotenv / env files (may contain API keys)
+.env
+.env.*
+
+# Byte-compiled / optimized / DLL files
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+tox/
+.tox/
+.nox/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Type check / caches
+.mypy_cache/
+.pyre/
+.pyright/
+
+# Streamlit
+.streamlit/
+
+# Local media / synthesized audio (generated at runtime)
+modules/streamlit_rtc/*.wav
+modules/streamlit_rtc/*.mp3
+modules/streamlit_rtc/*.m4a
+
+# Video / recordings
+*.mp4
+*.mov
+*.avi
+
+# Logs and local databases
+logs/
+*.log
+*.sqlite3
+*.db
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Misc
+*.so
+*.egg

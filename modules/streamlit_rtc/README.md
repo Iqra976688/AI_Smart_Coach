@@ -16,6 +16,22 @@ Real-time fitness coaching prototype built with Streamlit, MediaPipe pose tracki
 - (Optional) Google Gemini API key for AI feedback (set `GOOGLE_API_KEY`).
 - Webcam for live tracking.
 
+## Configuration & secrets
+
+Store runtime secrets (API keys, service credentials) in a `.env` file at the project root. This project uses `python-dotenv` (already loaded in `app.py`) so environment values will be available at runtime.
+
+Example `.env` (PowerShell):
+
+```powershell
+$env:GOOGLE_API_KEY = "your-gemini-key-here"
+```
+
+Security notes:
+
+- Do not commit `.env` to version control. A `.gitignore` entry is provided to exclude `.env` files.
+- Prefer per-developer environment variables or secret stores (GitHub Actions secrets, Azure Key Vault, etc.) for CI/CD.
+- Rotate keys regularly and avoid pasting secrets into shared documents or issue trackers.
+
 ## Setup Instructions
 
 ```powershell
