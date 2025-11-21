@@ -1,190 +1,236 @@
-📌 Overview
-AI Smart Coach is an advanced fitness, physiotherapy, and sports‑training assistant.
-It uses pose detection, body angle analysis, RAG knowledge retrieval, and agentic AI decision‑making to guide users with real‑time feedback and personalized training plans.
+# 🌟 **AI Smart Coach – README**
 
-It helps users:
+# 🏋️‍♂️ **AI Smart Coach**
 
-Fix workout form
+A smart, real-time AI-powered personal trainer that guides **gym exercises**, **sports movements**, and **physiotherapy routines** using **Computer Vision**, **LLMs**, **RAG**, and **Agentic AI**.
 
-Prevent injuries
+---
 
-Improve athletic movements
+# 🔥 **Key Highlights**
 
-Recover mobility
+## ✅ **Real-Time Posture Analysis**
 
-Build consistent habits
+* Detects joint positions (knees, elbows, shoulders, spine)
+* Shows skeleton overlay
+* Calculates angles
+* Highlights mistakes visually
 
-Track measurable progress
+---
 
-🚀 Key Features
-🧍‍♂️ 1. Real‑Time Pose Detection
-Uses MediaPipe to detect 33 keypoints
+## 🎙️ **Instant Voice + Text Coaching**
 
-Processes video, webcam, or images
+* Corrects your form in real time
+* Motivates you
+* Helps prevent injury
 
-Tracks joints (shoulders, elbows, hips, knees, ankles)
+**Examples:**
 
-Works on laptop or mobile camera
+* "Straighten your back!"
+* "Slow down your reps."
+* "Excellent control, keep going!"
 
-🎯 2. Action Analysis & Feedback
-Automatically calculates body angles
+---
 
-Detects mistakes like:
-✔ Back bending
-✔ Knee misalignment
-✔ Leaning forward
-✔ Dropping shoulders
+## 🤖 **Agentic AI (Self-Adaptive Coach)**
 
-Gives instant, clear corrections
+The system *thinks* and makes decisions like a real coach.
 
-♿ 3. Physiotherapy Support
-Detects slow movement patterns
+### **What It Does:**
 
-Tracks range of motion (ROM)
+* Chooses the next exercise
+* Decides set duration & reps
+* Adds rest when you’re tired
+* Stops instantly if unsafe movement is detected
+* Adjusts difficulty based on performance
+* Builds daily + weekly plans
 
-Identifies imbalances or weak sides
+---
 
-Ensures safe, controlled form
-(No medical diagnosis; guidance only)
+## 📚 **RAG Knowledge System**
 
-⚽ 4. Sports Coaching
-Supports modules like:
+Includes a small knowledge base for:
 
-Squats
+* Correct exercise form
+* Physiotherapy guidelines
+* Sports techniques
+* Injury prevention
+* Common mistakes
 
-Push‑ups
+This ensures the coach gives **safe**, **accurate**, and **trustworthy** feedback.
 
-Lunges
+---
 
-Running posture
+# 🧠 **Core Features**
 
-Mobility drills
+## 🏋️ **Gym Exercises Supported**
 
-Punching/kicking mechanics (optional)
+* Squats
+* Push-ups
+* Planks
+* Deadlifts
+* Lunges
+* Shoulder press
+* Bicep curls
+* And more...
 
-Each exercise includes:
+---
 
-Mistake detection
+## ⚽ **Sports Movement Analysis**
 
-Correct movement path
+Supports:
 
-Scoring and repetition count
+* Cricket batting & bowling
+* Football kicks
+* Running stride
+* Jump form
+* Tennis swings
 
-🧠 5. Agentic AI Decision System
-Your AI Coach decides:
+Checks for:
 
-Which exercise to do next
+* Balance
+* Foot placement
+* Speed
+* Angles
+* Stability
 
-How long each set should be
+---
 
-Which muscle group needs attention
+## 🩺 **Physiotherapy-Safe Mode**
 
-When to rest
+* Slow controlled movement detection
+* Compensation movement detection
+* Safety-first feedback
+* Posture correction
+* Gentle reminders
 
-When to progress to harder levels
+> ⚠️ The system **does not replace medical professionals**—it only assists between sessions.
 
-Powered by:
+---
 
-User history
+# 🔔 **Habits, Reminders & Reports**
 
-Improvement graphs
+## 🕒 **Smart Reminders**
 
-Mistake frequency
+* "Time for your daily workout!"
+* "Don’t forget your knee rehab session."
+* "Stretch before sleeping!"
 
-Fatigue signs
+## 📅 **Streak Tracking**
 
-Previous session results
+* Daily streaks
+* Consistency score
+* Improvement history
 
-📚 6. RAG (Retrieval-Augmented Generation)
-Upload PDF/Docs/Notes containing:
+## 📊 **Session Reports**
 
-Physiotherapy instructions
+* Accuracy score
+* Reps completed
+* Total time
+* Mistakes made
+* Suggested next exercises
 
-Sports training manuals
+---
 
-Movement guidelines
+# 🛠️ **Tech Stack**
 
-Exercise rules
+### **Computer Vision**
 
-AI will use them to give:
+* MediaPipe / YOLO-Pose / MoveNet
+* OpenCV
 
-Expert‑level explanations
+### **LLMs & AI**
 
-Proper technique steps
+* OpenAI GPT models
+* RAG (Retrieval Augmented Generation)
+* Agentic decision-making
 
-Safe movement advice
+### **Frontend / UI**
 
-Customized modifications
+* Gradio
+* Streamlit (optional)
 
-🔔 7. Reminders & Habit Tracking
-The system supports reminders for:
+### **Training Tools**
 
-Workout schedule
+* Google Colab
+* Hugging Face Spaces
 
-Water intake
+---
 
-Stretch breaks
+# ⚙️ **How the System Is Built**
 
-Posture checks
+## 🔸 **Phase 1: Build in Google Colab (Using Videos)**
 
-Daily challenges
+Because webcam doesn’t work well in Colab, the system is trained and tested using **uploaded videos**, like:
 
-Streak tracking
+* squat.mp4
+* pushup.mp4
+* physio_knee.mp4
 
-📊 8. Progress Dashboard
-Shows:
+This allows:
 
-Accuracy per rep
+* Smooth debugging
+* Clean pose extraction
+* Reliable frame-by-frame testing
 
-Mistakes breakdown
+## 🔸 **Phase 2: Local & Online Deployment (Webcam Enabled)**
 
-Weekly improvements
+Once the model works:
 
-Mobility progress
+### ✔ Run on Local Laptop
 
-Training time
+* Latest Gradio
+* Webcam works smoothly
 
-Weak areas
+### ✔ Deploy on Hugging Face Spaces
 
-Exercise difficulty curve
+* HTTPS support ensures stable webcam
 
-🧪 Input Types
-You can use:
+---
 
-Live webcam
+# 🧩 **Architecture Overview**
 
-Uploaded video
+## 🧠 **Agents in the System**
 
-Images
+* **Pose Analysis Agent** – reads angles, posture
+* **Performance Agent** – understands fatigue & accuracy
+* **Planning Agent** – creates workout plans
+* **Decision Agent** – picks the next move
+* **Safety Agent** – prevents injury
+* **LLM Coaching Agent** – explains mistakes
+* **RAG Agent** – ensures knowledge accuracy
 
-Historical performance JSON files
+All agents communicate through a shared state.
 
-🧰 Technology Stack
-Core AI
-Python
+---
 
-MediaPipe
+# 👥 **Team Roles**
 
-OpenCV
+### **Abdul Basit**
 
-SciPy
+* Full code development
+* Feature implementation
 
-NumPy
+### **Areeba**
 
-LLM & Agent System
-OpenAI
+* RAG system
+* Knowledge base and requirements
 
-LangChain
+### **Sami**
 
-FAISS / ChromaDB
+* Dataset collection
+* Movement library creation
 
-tiktoken
+---
 
-pydantic
+# 🚀 **Project Summary**
 
-Frontend / UI
+AI Smart Coach is a next-generation personal training system that watches your movement, corrects your form, sends reminders, builds habits, analyzes posture, and uses Agentic AI to plan your next steps—all while being safe for gym, sports, and physiotherapy.
 
-Gradio 4.X
+This project gives users a complete personal trainer experience from their own camera.
+
+---
+
+
 
 Model Structure 
 <img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/d7662b54-0728-4415-b78d-4dcfb910d053" />
