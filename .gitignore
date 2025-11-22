@@ -80,3 +80,4 @@ logs/
 # Misc
 *.so
 *.egg
+backups/
