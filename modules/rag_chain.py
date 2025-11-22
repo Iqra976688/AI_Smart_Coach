@@ -1,39 +1,45 @@
+"""
+rag_chain.py
+AI Smart Coach core logic:
+
+* LLM feedback via Gemini API
+* Voice/audio cues with gTTS and pyttsx3 fallback
+* Dataset integration for exercise guidance
+* Async-safe design for smooth real-time video
+  """
+
 import os
+import json
 import base64
 import tempfile
-from io import BytesIO
 from functools import lru_cache
 from typing import Optional, Dict
+
+# TTS libraries
 
 from gtts import gTTS
 import pyttsx3
 
-# Optional Gemini LLM via LangChain
+# Optional LangChain Gemini import
 
 try:
 from langchain_google_genai import ChatGoogleGenerativeAI
 except ImportError:
 ChatGoogleGenerativeAI = None
 
-# Load exercise dataset
+# Load exercise dataset for cues
 
-DATASET_FILE = os.path.join(os.path.dirname(**file**), "dataset.json")
-try:
-with open(DATASET_FILE, "r", encoding="utf-8") as f:
-EXERCISE_DATA = [line and json.loads(line) for line in f if line.strip()]
-except Exception:
+DATASET_FILE = os.path.join(os.path.dirname(**file**), "..", "dataset.json")
 EXERCISE_DATA = []
+if os.path.exists(DATASET_FILE):
+with open(DATASET_FILE, "r", encoding="utf-8") as f:
+EXERCISE_DATA = [json.loads(line) for line in f if line.strip()]
 
-# Static knowledge cues for fallback
+# -----------------------------
 
-KNOWLEDGE_BANK = [
-"Keep joints stacked to protect ligaments during compound lifts.",
-"Maintain a neutral spine by bracing the core before every rep.",
-"Drive from the hips and keep knees tracking over toes in lower-body work.",
-"Balance tempo: controlled eccentric, powerful concentric for strength movements.",
-"Use steady nasal breathing during physiotherapy drills to avoid bracing.",
-"Explosive sports motions need a stable base - focus on balance before speed.",
-]
+# Utility functions
+
+# -----------------------------
 
 def _format_metrics(metrics: Optional[Dict[str, object]]) -> str:
 """Format joint and movement metrics into a readable string."""
@@ -47,7 +53,7 @@ if isinstance(angle, (int, float)) and isinstance(rom, (int, float)):
 return f"angle={angle:.1f}deg, tempo_state={tempo_state}, reps={reps}, ROM={rom:.1f}"
 return f"tempo_state={tempo_state}, reps={reps}, ROM={rom}"
 
-# pyttsx3 engine singleton
+# Singleton pyttsx3 engine
 
 _engine = None
 def _get_engine():
@@ -58,10 +64,16 @@ _engine.setProperty('rate', 150)
 _engine.setProperty('volume', 1.0)
 return _engine
 
+# -----------------------------
+
+# CoachBrain: LLM feedback
+
+# -----------------------------
+
 class CoachBrain:
 """
-Generates coaching cues using Gemini LLM or falls back to static cues.
-Compatible with exercise dataset and pose metrics.
+Generate concise, encouraging coaching cues using Gemini LLM or fallback.
+Reads exercise dataset to provide context-aware guidance.
 """
 
 ```
@@ -85,44 +97,50 @@ def get_feedback(
     metrics: Optional[Dict[str, object]] = None
 ) -> str:
     """
-    Return a concise, encouraging coaching cue.
+    Return a single-sentence coaching cue.
     Falls back to static message if LLM is unavailable.
     """
-    # Fallback message
-    base_message = f"{movement}: {cue}. Maintain control and keep joints stacked."
+    # Default message
+    base_message = f"{movement}: {cue}. Maintain control and proper form."
 
-    if not self._llm:
-        return base_message
-
-    # Format metrics and dataset context
+    # Format metrics for LLM context
     metrics_text = _format_metrics(metrics)
-    exercise_data = next((ex for ex in EXERCISE_DATA if ex.get("exercise") == movement), None)
-    instructions_text = ""
-    if exercise_data:
-        instructions_text = "Instructions: " + " ".join(exercise_data.get("instructions", [])) + "\n"
 
-    # Prompt for LLM
+    # Compose prompt
+    exercise_data = next((ex for ex in EXERCISE_DATA if ex["exercise"] == movement), None)
+    dataset_text = ""
+    if exercise_data:
+        dataset_text = (
+            f"Instructions: {', '.join(exercise_data['instructions'])}\n"
+            f"Common mistakes: {', '.join(exercise_data['common_mistakes'])}\n"
+            f"Corrections: {', '.join(exercise_data['corrections'])}"
+        )
+
     prompt = (
-        "You are a supportive biomechanics coach. Craft a concise, encouraging voice cue "
-        "for the athlete, under 25 words.\n\n"
-        f"Context:\n{'\n'.join(KNOWLEDGE_BANK)}\n{instructions_text}"
+        f"You are a supportive biomechanics coach. Use the context below to craft a "
+        f"concise, encouraging voice cue for the athlete. Keep it under 25 words.\n\n"
+        f"Context:\n{dataset_text}\n\n"
         f"Movement: {movement}\nObserved issue: {cue}\nRecent metrics: {metrics_text}\n\n"
         "Respond with a single sentence in plain English."
     )
 
-    try:
-        result = self._llm.invoke(prompt)
-    except Exception:
-        self._llm = None
-        return base_message
+    # Invoke LLM
+    if self._llm:
+        try:
+            result = self._llm.invoke(prompt)
+            text = getattr(result, "content", None)
+            if isinstance(text, list):
+                text = " ".join(str(part) for part in text)
+            return text.strip() or base_message
+        except Exception:
+            self._llm = None
+    return base_message
 
-    text = getattr(result, "content", None)
-    if not text:
-        return base_message
-    if isinstance(text, list):
-        text = " ".join(str(part) for part in text)
-    return text.strip() or base_message
-```
+# -----------------------------
+
+# CoachVoice: TTS feedback
+
+# -----------------------------
 
 class CoachVoice:
 """
@@ -137,12 +155,16 @@ def __init__(self, language: str = "en", slow: bool = False):
 
 @lru_cache(maxsize=64)
 def synthesize(self, text: str) -> Optional[str]:
-    """Convert text to base64-encoded audio."""
+    """
+    Convert text to base64-encoded audio.
+    Tries gTTS first; falls back to pyttsx3 offline TTS if needed.
+    """
     if not text:
         return None
 
-    # Attempt gTTS first
+    # Try gTTS
     try:
+        from io import BytesIO
         buffer = BytesIO()
         tts = gTTS(text=text, lang=self.language, slow=self.slow)
         tts.write_to_fp(buffer)
@@ -161,12 +183,13 @@ def synthesize(self, text: str) -> Optional[str]:
             engine.runAndWait()
             tmpfile.seek(0)
             audio_bytes = tmpfile.read()
-        return base64.b64encode(audio_bytes).decode("ascii") if audio_bytes else None
+        if audio_bytes:
+            return base64.b64encode(audio_bytes).decode("ascii")
     except Exception:
         return None
 
 def audio_tag(self, audio_b64: Optional[str], autoplay: bool = True) -> Optional[str]:
-    """Return HTML audio tag for embedding base64-encoded audio."""
+    """Return HTML audio tag for embedding base64-encoded audio in Streamlit."""
     if not audio_b64:
         return None
     return (
@@ -175,4 +198,3 @@ def audio_tag(self, audio_b64: Optional[str], autoplay: bool = True) -> Optional
         "Your browser does not support the audio element."
         "</audio>"
     )
-```
