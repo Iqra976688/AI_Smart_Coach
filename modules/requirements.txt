@@ -1,0 +1,11 @@
+
+streamlit
+streamlit-webrtc
+mediapipe
+opencv-python-headless
+langchain-google-genai
+faiss-cpu
+python-dotenv
+numpy
+gTTS
+pyttsx3
