@@ -19,7 +19,7 @@ from modules.agentic_ai import AgenticCoach  # Optional AI agent
 
 # -----------------------------
 
-DATASET_FILE = os.path.join(os.path.dirname(**file**), "dataset.json")
+DATASET_FILE = os.path.join(os.path.dirname(__file__), "dataset.json")
 with open(DATASET_FILE, "r", encoding="utf-8") as f:
 EXERCISE_DATA = [json.loads(line) for line in f if line.strip()]
 
