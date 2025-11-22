@@ -1,11 +1,3 @@
-"""AI Smart Coach: Coaching brain and audio utilities.
-
-Features:
-- Gemini LLM for exercise cues (requires API key)
-- gTTS for text-to-speech feedback
-- pyttsx3 fallback for offline TTS
-- Graceful fallback to static guidance if LLM or TTS fails
-"""
 
 from **future** import annotations
 import os
@@ -61,9 +53,8 @@ _engine.setProperty('volume', 1.0)
 return _engine
 
 class CoachBrain:
-"""Generates concise, encouraging cues using Gemini LLM or static fallback."""
+#"""Generates concise, encouraging cues using Gemini LLM or static fallback."""
 
-```
 def __init__(self):
     self._llm = None
     api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GOOGLE_GENAI_API_KEY")
@@ -109,7 +100,7 @@ def get_feedback(
     return text.strip() or base_message
 
 def _knowledge_bank_text(self) -> str:
-    """Return all instructions/mistakes/corrections as single text block."""
+    #"""Return all instructions/mistakes/corrections as single text block."""
     lines = []
     for item in EXERCISE_DATA:
         instr = item.get("instructions", [])
@@ -120,12 +111,10 @@ def _knowledge_bank_text(self) -> str:
         lines.extend([f"Mistake: {x}" for x in mistakes])
         lines.extend([f"Correction: {x}" for x in corrections])
     return "\n".join(lines)
-```
 
 class CoachVoice:
-"""Converts text cues to audio with gTTS + pyttsx3 fallback."""
+#"""Converts text cues to audio with gTTS + pyttsx3 fallback."""
 
-```
 def __init__(self, language: str = "en", slow: bool = False):
     self.language = language
     self.slow = slow
@@ -168,4 +157,3 @@ def audio_tag(self, audio_b64: Optional[str], autoplay: bool = True) -> Optional
         "Your browser does not support the audio element."
         "</audio>"
     )
-```
