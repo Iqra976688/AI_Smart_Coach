@@ -146,8 +146,7 @@ Checks for:
 
 ### **Frontend / UI**
 
-* Gradio
-* Streamlit (optional)
+* Streamlit 
 
 ### **Training Tools**
 
@@ -200,14 +199,6 @@ Once the model works:
 * **RAG Agent** – ensures knowledge accuracy
 
 All agents communicate through a shared state.
-
----
-
-# 🚀 **Project Summary**
-
-AI Smart Coach is a next-generation personal training system that watches your movement, corrects your form, sends reminders, builds habits, analyzes posture, and uses Agentic AI to plan your next steps—all while being safe for gym, sports, and physiotherapy.
-
-This project gives users a complete personal trainer experience from their own camera.
 
 ---
 
