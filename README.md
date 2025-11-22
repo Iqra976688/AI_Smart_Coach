@@ -203,25 +203,6 @@ All agents communicate through a shared state.
 
 ---
 
-# 👥 **Team Roles**
-
-### **Abdul Basit**
-
-* Full code development
-* Feature implementation
-
-### **Areeba**
-
-* RAG system
-* Knowledge base and requirements
-
-### **Sami**
-
-* Dataset collection
-* Movement library creation
-
----
-
 # 🚀 **Project Summary**
 
 AI Smart Coach is a next-generation personal training system that watches your movement, corrects your form, sends reminders, builds habits, analyzes posture, and uses Agentic AI to plan your next steps—all while being safe for gym, sports, and physiotherapy.
@@ -230,6 +211,64 @@ This project gives users a complete personal trainer experience from their own c
 
 ---
 
+
+## Prerequisites
+
+- Windows, macOS, or Linux with Python 3.10+ installed.
+- (Optional) Google Gemini API key for AI feedback (set `GOOGLE_API_KEY`).
+- Webcam for live tracking.
+
+## Configuration & secrets
+
+Store runtime secrets (API keys, service credentials) in a `.env` file at the project root. This project uses `python-dotenv` (already loaded in `app.py`) so environment values will be available at runtime.
+
+Example `.env` (PowerShell):
+
+```powershell
+$env:GOOGLE_API_KEY = "your-gemini-key-here"
+```
+
+Security notes:
+
+- Do not commit `.env` to version control. A `.gitignore` entry is provided to exclude `.env` files.
+- Prefer per-developer environment variables or secret stores (GitHub Actions secrets, Azure Key Vault, etc.) for CI/CD.
+- Rotate keys regularly and avoid pasting secrets into shared documents or issue trackers.
+
+## Setup Instructions
+
+```powershell
+# Clone or download this repository, then navigate into it
+cd "AI Smart Coach"
+
+# Create and activate a virtual environment
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+
+# Upgrade pip
+python -m pip install --upgrade pip
+
+# Install project dependencies
+pip install -r requirements.txt
+
+# (Optional) Configure environment variables
+# Example using PowerShell:
+$env:GOOGLE_API_KEY = "your-gemini-key-here"
+
+# Run the Streamlit app
+streamlit run app.py
+```
+
+When the Streamlit dashboard opens in your browser, grant camera permissions. Use the sidebar to select movement modes and focus areas. The combined video pane shows the live feed and real-time coaching overlay; the right column lists metrics, cues, and AI audio playback controls.
+
+## Troubleshooting
+
+- If `streamlit` is not recognized, ensure the virtual environment is activated before running commands.
+- For MediaPipe GPU errors on Windows, install the latest Visual C++ redistributables.
+- Missing AI cues? Confirm `GOOGLE_API_KEY` is set and the `langchain-google-genai` package installed.
+
+## License
+
+This prototype is provided for Aspire GenAI Hackathon exploration. Adapt as needed for your project.
 
 
 Model Structure 
