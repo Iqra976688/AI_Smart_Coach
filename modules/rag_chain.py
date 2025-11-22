@@ -1,20 +1,14 @@
-
-from **future** import annotations
 import os
-import json
 import base64
 import tempfile
 from io import BytesIO
 from functools import lru_cache
 from typing import Optional, Dict
 
-from dotenv import load_dotenv
-load_dotenv()  # Automatically load API keys from .env
-
 from gtts import gTTS
-import pyttsx3  # offline fallback for TTS
+import pyttsx3
 
-# Optional LangChain Gemini import
+# Optional Gemini LLM via LangChain
 
 try:
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -26,11 +20,23 @@ ChatGoogleGenerativeAI = None
 DATASET_FILE = os.path.join(os.path.dirname(**file**), "dataset.json")
 try:
 with open(DATASET_FILE, "r", encoding="utf-8") as f:
-EXERCISE_DATA = [json.loads(line) for line in f if line.strip()]
+EXERCISE_DATA = [line and json.loads(line) for line in f if line.strip()]
 except Exception:
 EXERCISE_DATA = []
 
+# Static knowledge cues for fallback
+
+KNOWLEDGE_BANK = [
+"Keep joints stacked to protect ligaments during compound lifts.",
+"Maintain a neutral spine by bracing the core before every rep.",
+"Drive from the hips and keep knees tracking over toes in lower-body work.",
+"Balance tempo: controlled eccentric, powerful concentric for strength movements.",
+"Use steady nasal breathing during physiotherapy drills to avoid bracing.",
+"Explosive sports motions need a stable base - focus on balance before speed.",
+]
+
 def _format_metrics(metrics: Optional[Dict[str, object]]) -> str:
+"""Format joint and movement metrics into a readable string."""
 if not metrics:
 return "Metrics not available."
 angle = metrics.get("angle")
@@ -53,8 +59,12 @@ _engine.setProperty('volume', 1.0)
 return _engine
 
 class CoachBrain:
-#"""Generates concise, encouraging cues using Gemini LLM or static fallback."""
+"""
+Generates coaching cues using Gemini LLM or falls back to static cues.
+Compatible with exercise dataset and pose metrics.
+"""
 
+```
 def __init__(self):
     self._llm = None
     api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GOOGLE_GENAI_API_KEY")
@@ -74,18 +84,32 @@ def get_feedback(
     movement: str,
     metrics: Optional[Dict[str, object]] = None
 ) -> str:
+    """
+    Return a concise, encouraging coaching cue.
+    Falls back to static message if LLM is unavailable.
+    """
+    # Fallback message
     base_message = f"{movement}: {cue}. Maintain control and keep joints stacked."
+
     if not self._llm:
         return base_message
 
+    # Format metrics and dataset context
     metrics_text = _format_metrics(metrics)
+    exercise_data = next((ex for ex in EXERCISE_DATA if ex.get("exercise") == movement), None)
+    instructions_text = ""
+    if exercise_data:
+        instructions_text = "Instructions: " + " ".join(exercise_data.get("instructions", [])) + "\n"
+
+    # Prompt for LLM
     prompt = (
-        "You are a supportive biomechanics coach. Use the context below to craft a "
-        "concise, encouraging voice cue for the athlete. Keep it under 25 words.\n\n"
-        f"Exercise cues:\n{self._knowledge_bank_text()}\n\n"
+        "You are a supportive biomechanics coach. Craft a concise, encouraging voice cue "
+        "for the athlete, under 25 words.\n\n"
+        f"Context:\n{'\n'.join(KNOWLEDGE_BANK)}\n{instructions_text}"
         f"Movement: {movement}\nObserved issue: {cue}\nRecent metrics: {metrics_text}\n\n"
         "Respond with a single sentence in plain English."
     )
+
     try:
         result = self._llm.invoke(prompt)
     except Exception:
@@ -98,33 +122,26 @@ def get_feedback(
     if isinstance(text, list):
         text = " ".join(str(part) for part in text)
     return text.strip() or base_message
-
-def _knowledge_bank_text(self) -> str:
-    #"""Return all instructions/mistakes/corrections as single text block."""
-    lines = []
-    for item in EXERCISE_DATA:
-        instr = item.get("instructions", [])
-        mistakes = item.get("common_mistakes", [])
-        corrections = item.get("corrections", [])
-        lines.append(f"Exercise: {item.get('exercise')}")
-        lines.extend([f"Instruction: {x}" for x in instr])
-        lines.extend([f"Mistake: {x}" for x in mistakes])
-        lines.extend([f"Correction: {x}" for x in corrections])
-    return "\n".join(lines)
+```
 
 class CoachVoice:
-#"""Converts text cues to audio with gTTS + pyttsx3 fallback."""
+"""
+Convert text to audio using gTTS with pyttsx3 fallback.
+Provides base64 audio string for embedding in UI.
+"""
 
+```
 def __init__(self, language: str = "en", slow: bool = False):
     self.language = language
     self.slow = slow
 
 @lru_cache(maxsize=64)
 def synthesize(self, text: str) -> Optional[str]:
+    """Convert text to base64-encoded audio."""
     if not text:
         return None
 
-    # gTTS attempt
+    # Attempt gTTS first
     try:
         buffer = BytesIO()
         tts = gTTS(text=text, lang=self.language, slow=self.slow)
@@ -136,7 +153,7 @@ def synthesize(self, text: str) -> Optional[str]:
     except Exception:
         pass
 
-    # Fallback to pyttsx3
+    # Fallback: pyttsx3 offline
     try:
         engine = _get_engine()
         with tempfile.NamedTemporaryFile(delete=True, suffix=".mp3") as tmpfile:
@@ -149,6 +166,7 @@ def synthesize(self, text: str) -> Optional[str]:
         return None
 
 def audio_tag(self, audio_b64: Optional[str], autoplay: bool = True) -> Optional[str]:
+    """Return HTML audio tag for embedding base64-encoded audio."""
     if not audio_b64:
         return None
     return (
@@ -157,3 +175,4 @@ def audio_tag(self, audio_b64: Optional[str], autoplay: bool = True) -> Optional
         "Your browser does not support the audio element."
         "</audio>"
     )
+```
