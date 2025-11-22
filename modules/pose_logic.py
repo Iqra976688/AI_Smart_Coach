@@ -1,4 +1,4 @@
-"""Pose analysis utilities for the AI Smart Coach application."""
+#"""Pose analysis utilities for the AI Smart Coach application."""
 from __future__ import annotations
 
 import statistics
