@@ -198,14 +198,31 @@ def main():
                     feedback_payload = n
         except Exception: pass
 
-        metrics = feedback_payload.get("metrics") if feedback_payload else {}
-        report = getattr(feedback_payload, "report", None) or CoachReport()
+       metrics = feedback_payload.get("metrics") if feedback_payload else {}
+report = getattr(feedback_payload, "report", None) or CoachReport()
 
-        st.metric("Repetitions", int(metrics.get("reps", 0)))
-        st.metric("Stage", metrics.get("stage", "—"))
-        st.metric("Angle", f"{metrics.get('angle', '—'):.1f}" if isinstance(metrics.get("angle"), (int,float)) else "—")
-        st.metric("ROM", f"{metrics.get('rom_current', '—'):.1f}" if isinstance(metrics.get("rom_current"), (int,float)) else "—")
-        st.metric("Tempo (last)", f"{metrics.get('tempo_last', '—'):.2f}" if isinstance(metrics.get("tempo_last"), (int,float)) else "—")
+# Repetitions
+rep_val = metrics.get("reps", 0)
+st.metric("Repetitions", int(rep_val) if isinstance(rep_val, (int, float)) else 0)
+
+# Stage
+st.metric("Stage", metrics.get("stage", "—"))
+
+# Joint Angle
+angle_val = metrics.get("angle")
+angle_text = f"{angle_val:.1f}" if isinstance(angle_val, (int, float)) else "—"
+st.metric("Angle", angle_text)
+
+# Range of Motion
+rom_val = metrics.get("rom_last") or metrics.get("rom_current")
+rom_text = f"{rom_val:.1f}" if isinstance(rom_val, (int, float)) else "—"
+st.metric("Range of Motion", rom_text)
+
+# Tempo
+tempo_val = metrics.get("tempo_last")
+tempo_text = f"{tempo_val:.2f}s" if isinstance(tempo_val, (int, float)) else "—"
+st.metric("Tempo (last)", tempo_text)
+
 
         # RAG/Agentic feedback
         guidance_block = ""
