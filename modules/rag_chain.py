@@ -1,200 +1,261 @@
+# rag_chain.py
 """
-rag_chain.py
-AI Smart Coach core logic:
+AI Smart Coach: Coaching brain and audio utilities.
 
-* LLM feedback via Gemini API
-* Voice/audio cues with gTTS and pyttsx3 fallback
-* Dataset integration for exercise guidance
-* Async-safe design for smooth real-time video
-  """
+Provides:
+- CoachBrain: produces concise coaching cues (uses optional LLM if configured)
+- CoachVoice: converts text -> base64 MP3 audio (gTTS with pyttsx3 fallback)
 
+Design goals:
+- Defensive: missing optional libraries won't crash the app.
+- Small surface API so app.py can call get_feedback() and synthesize().
+"""
+
+from __future__ import annotations
 import os
-import json
 import base64
 import tempfile
+from io import BytesIO
 from functools import lru_cache
 from typing import Optional, Dict
 
-# TTS libraries
-
-from gtts import gTTS
-import pyttsx3
-
-# Optional LangChain Gemini import
+# Optional TTS backends
+try:
+    from gtts import gTTS
+except Exception:
+    gTTS = None
 
 try:
-from langchain_google_genai import ChatGoogleGenerativeAI
-except ImportError:
-ChatGoogleGenerativeAI = None
+    import pyttsx3
+except Exception:
+    pyttsx3 = None
 
-# Load exercise dataset for cues
+# Optional LangChain / Gemini adapter (kept optional)
+try:
+    # Note: many setups will not have this. We handle absence gracefully.
+    from langchain_google_genai import ChatGoogleGenerativeAI  # type: ignore
+except Exception:
+    ChatGoogleGenerativeAI = None
 
-DATASET_FILE = os.path.join(os.path.dirname(**file**), "..", "dataset.json")
-EXERCISE_DATA = []
-if os.path.exists(DATASET_FILE):
-with open(DATASET_FILE, "r", encoding="utf-8") as f:
-EXERCISE_DATA = [json.loads(line) for line in f if line.strip()]
+# -----------------------
+# Knowledge bank (static cues)
+# -----------------------
+KNOWLEDGE_BANK = [
+    "Keep joints stacked to protect ligaments during compound lifts.",
+    "Maintain a neutral spine by bracing the core before every rep.",
+    "Drive from the hips and keep knees tracking over toes in lower-body work.",
+    "Balance tempo: controlled eccentric, powerful concentric for strength movements.",
+    "Use steady nasal breathing during physiotherapy drills to avoid bracing.",
+    "Explosive sports motions need a stable base - focus on balance before speed.",
+]
 
-# -----------------------------
-
-# Utility functions
-
-# -----------------------------
-
+# -----------------------
+# Helper: format metrics to short string
+# -----------------------
 def _format_metrics(metrics: Optional[Dict[str, object]]) -> str:
-"""Format joint and movement metrics into a readable string."""
-if not metrics:
-return "Metrics not available."
-angle = metrics.get("angle")
-tempo_state = metrics.get("tempo_state")
-reps = metrics.get("reps")
-rom = metrics.get("rom_last") or metrics.get("rom_current")
-if isinstance(angle, (int, float)) and isinstance(rom, (int, float)):
-return f"angle={angle:.1f}deg, tempo_state={tempo_state}, reps={reps}, ROM={rom:.1f}"
-return f"tempo_state={tempo_state}, reps={reps}, ROM={rom}"
+    if not metrics:
+        return "no metrics"
+    angle = metrics.get("angle")
+    tempo = metrics.get("tempo_last") or metrics.get("tempo_avg")
+    reps = metrics.get("reps")
+    rom = metrics.get("rom_last") or metrics.get("rom_current")
+    parts = []
+    if isinstance(angle, (int, float)):
+        parts.append(f"angle={angle:.1f}°")
+    if isinstance(tempo, (int, float)):
+        parts.append(f"tempo={tempo:.2f}s")
+    if isinstance(reps, (int, float)):
+        parts.append(f"reps={int(reps)}")
+    if isinstance(rom, (int, float)):
+        parts.append(f"ROM={rom:.1f}°")
+    return ", ".join(parts) if parts else "metrics present"
 
-# Singleton pyttsx3 engine
-
-_engine = None
-def _get_engine():
-global _engine
-if _engine is None:
-_engine = pyttsx3.init()
-_engine.setProperty('rate', 150)
-_engine.setProperty('volume', 1.0)
-return _engine
-
-# -----------------------------
-
-# CoachBrain: LLM feedback
-
-# -----------------------------
-
+# -----------------------
+# CoachBrain
+# -----------------------
 class CoachBrain:
-"""
-Generate concise, encouraging coaching cues using Gemini LLM or fallback.
-Reads exercise dataset to provide context-aware guidance.
-"""
+    """
+    Generate concise, encouraging coaching cues. If a Gemini/LangChain LLM is
+    configured via environment variables and langchain_google_genai is installed,
+    use it. Otherwise fall back to static, rule-based messages.
+    """
 
-```
-def __init__(self):
-    self._llm = None
-    api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GOOGLE_GENAI_API_KEY")
-    if ChatGoogleGenerativeAI and api_key:
+    def __init__(self):
+        self._llm = None
+        # Look for typical env var names for Google GenAI
+        api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GOOGLE_GENAI_API_KEY")
+        if ChatGoogleGenerativeAI and api_key:
+            try:
+                # Create a lightweight LangChain wrapper (if available)
+                self._llm = ChatGoogleGenerativeAI(
+                    model="gemini-2.5-flash",
+                    temperature=0.35,
+                    max_output_tokens=120,
+                )
+            except Exception:
+                # If anything fails, disable LLM use silently
+                self._llm = None
+
+    def _fallback_message(self, cue: str, movement: str, metrics: Optional[Dict[str, object]] = None) -> str:
+        """Short static fallback that is always available."""
+        metrics_text = _format_metrics(metrics)
+        base = f"{movement}: {cue}. {metrics_text}."
+        # Trim to one short sentence if too long
+        if len(base) > 200:
+            return base.split(".")[0] + "."
+        return base
+
+    def _build_prompt(self, cue: str, movement: str, metrics: Optional[Dict[str, object]]) -> str:
+        metrics_text = _format_metrics(metrics)
+        prompt = (
+            "You are a concise, supportive biomechanics coach. Using the context below, "
+            "write a single-sentence voice cue (under 25 words) that helps the user fix the issue.\n\n"
+            "Context:\n" + "\n".join(KNOWLEDGE_BANK) + "\n\n"
+            f"Movement: {movement}\nObserved issue: {cue}\nRecent metrics: {metrics_text}\n\n"
+            "Return a single, plain English sentence."
+        )
+        return prompt
+
+    def get_feedback(self, cue: str, movement: str, metrics: Optional[Dict[str, object]] = None) -> str:
+        """
+        Return a short (single-sentence) coaching cue.
+        - If LLM is available it will be used; otherwise fallback is returned.
+        """
+        if not cue:
+            cue = "Maintain good form"
+        # If no LLM just return fallback
+        if not self._llm:
+            try:
+                return self._fallback_message(cue, movement, metrics)
+            except Exception:
+                return f"{movement}: {cue}."
+
+        prompt = self._build_prompt(cue, movement, metrics)
         try:
-            self._llm = ChatGoogleGenerativeAI(
-                model="gemini-2.5-flash",
-                temperature=0.4,
-                max_output_tokens=128
-            )
+            # Different langchain adapters may return different structures.
+            # Use a tolerant approach:
+            result = self._llm.invoke(prompt)
+            # result may have .content or be a string
+            text = None
+            if isinstance(result, str):
+                text = result
+            else:
+                text = getattr(result, "content", None) or getattr(result, "text", None)
+            if not text:
+                # Some adapters return a list of message parts
+                if isinstance(result, (list, tuple)):
+                    text = " ".join(str(x) for x in result)
+            if not text:
+                return self._fallback_message(cue, movement, metrics)
+            # Ensure short and single-sentence if possible
+            text = str(text).strip()
+            if "." in text:
+                # pick first sentence
+                text = text.split(".")[0].strip() + "."
+            if len(text.split()) > 25:
+                # truncate politely
+                text = " ".join(text.split()[:25]) + "..."
+            return text
         except Exception:
+            # On any error, disable LLM and return fallback
             self._llm = None
+            return self._fallback_message(cue, movement, metrics)
 
-def get_feedback(
-    self,
-    cue: str,
-    movement: str,
-    metrics: Optional[Dict[str, object]] = None
-) -> str:
+# -----------------------
+# CoachVoice
+# -----------------------
+class CoachVoice:
     """
-    Return a single-sentence coaching cue.
-    Falls back to static message if LLM is unavailable.
+    Convert cue text to base64-encoded MP3 audio suitable for embedding in UI.
+    Tries gTTS (online) first, then pyttsx3 (offline) fallback.
     """
-    # Default message
-    base_message = f"{movement}: {cue}. Maintain control and proper form."
 
-    # Format metrics for LLM context
-    metrics_text = _format_metrics(metrics)
+    def __init__(self, language: str = "en", slow: bool = False):
+        self.language = language
+        self.slow = slow
 
-    # Compose prompt
-    exercise_data = next((ex for ex in EXERCISE_DATA if ex["exercise"] == movement), None)
-    dataset_text = ""
-    if exercise_data:
-        dataset_text = (
-            f"Instructions: {', '.join(exercise_data['instructions'])}\n"
-            f"Common mistakes: {', '.join(exercise_data['common_mistakes'])}\n"
-            f"Corrections: {', '.join(exercise_data['corrections'])}"
+    @lru_cache(maxsize=128)
+    def synthesize(self, text: str) -> Optional[str]:
+        """
+        Convert text to base64-encoded MP3 bytes and return as ASCII string.
+        Returns None on failure.
+        """
+        if not text:
+            return None
+
+        # 1) Try gTTS if available
+        if gTTS:
+            try:
+                buf = BytesIO()
+                tts = gTTS(text=text, lang=self.language, slow=self.slow)
+                tts.write_to_fp(buf)
+                buf.seek(0)
+                audio_bytes = buf.read()
+                if audio_bytes:
+                    return base64.b64encode(audio_bytes).decode("ascii")
+            except Exception:
+                # fall through to pyttsx3
+                pass
+
+        # 2) Try pyttsx3 offline (writes to temp file)
+        if pyttsx3:
+            try:
+                engine = pyttsx3.init()
+                # Slightly lower rate for clarity
+                try:
+                    engine.setProperty("rate", 150)
+                except Exception:
+                    pass
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tf:
+                    tmp_name = tf.name
+                try:
+                    engine.save_to_file(text, tmp_name)
+                    engine.runAndWait()
+                    with open(tmp_name, "rb") as fh:
+                        audio_bytes = fh.read()
+                    try:
+                        os.remove(tmp_name)
+                    except Exception:
+                        pass
+                    if audio_bytes:
+                        return base64.b64encode(audio_bytes).decode("ascii")
+                finally:
+                    # ensure removal if anything left
+                    if os.path.exists(tmp_name):
+                        try:
+                            os.remove(tmp_name)
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+
+        # If both backends unavailable / failed
+        return None
+
+    def audio_tag(self, audio_b64: Optional[str], autoplay: bool = False) -> Optional[str]:
+        """
+        Return an HTML audio tag with the base64 MP3 embedded.
+        Set autoplay=True to auto-play in browsers that allow it.
+        """
+        if not audio_b64:
+            return None
+        autoplay_attr = "autoplay" if autoplay else ""
+        # Use controls for safety so user can play/pause
+        return (
+            f"<audio controls {autoplay_attr}>"
+            f"<source src='data:audio/mpeg;base64,{audio_b64}' type='audio/mpeg'>"
+            "Your browser does not support the audio element."
+            "</audio>"
         )
 
-    prompt = (
-        f"You are a supportive biomechanics coach. Use the context below to craft a "
-        f"concise, encouraging voice cue for the athlete. Keep it under 25 words.\n\n"
-        f"Context:\n{dataset_text}\n\n"
-        f"Movement: {movement}\nObserved issue: {cue}\nRecent metrics: {metrics_text}\n\n"
-        "Respond with a single sentence in plain English."
-    )
 
-    # Invoke LLM
-    if self._llm:
-        try:
-            result = self._llm.invoke(prompt)
-            text = getattr(result, "content", None)
-            if isinstance(text, list):
-                text = " ".join(str(part) for part in text)
-            return text.strip() or base_message
-        except Exception:
-            self._llm = None
-    return base_message
-
-# -----------------------------
-
-# CoachVoice: TTS feedback
-
-# -----------------------------
-
-class CoachVoice:
-"""
-Convert text to audio using gTTS with pyttsx3 fallback.
-Provides base64 audio string for embedding in UI.
-"""
-
-```
-def __init__(self, language: str = "en", slow: bool = False):
-    self.language = language
-    self.slow = slow
-
-@lru_cache(maxsize=64)
-def synthesize(self, text: str) -> Optional[str]:
-    """
-    Convert text to base64-encoded audio.
-    Tries gTTS first; falls back to pyttsx3 offline TTS if needed.
-    """
-    if not text:
-        return None
-
-    # Try gTTS
-    try:
-        from io import BytesIO
-        buffer = BytesIO()
-        tts = gTTS(text=text, lang=self.language, slow=self.slow)
-        tts.write_to_fp(buffer)
-        buffer.seek(0)
-        audio_bytes = buffer.read()
-        if audio_bytes:
-            return base64.b64encode(audio_bytes).decode("ascii")
-    except Exception:
-        pass
-
-    # Fallback: pyttsx3 offline
-    try:
-        engine = _get_engine()
-        with tempfile.NamedTemporaryFile(delete=True, suffix=".mp3") as tmpfile:
-            engine.save_to_file(text, tmpfile.name)
-            engine.runAndWait()
-            tmpfile.seek(0)
-            audio_bytes = tmpfile.read()
-        if audio_bytes:
-            return base64.b64encode(audio_bytes).decode("ascii")
-    except Exception:
-        return None
-
-def audio_tag(self, audio_b64: Optional[str], autoplay: bool = True) -> Optional[str]:
-    """Return HTML audio tag for embedding base64-encoded audio in Streamlit."""
-    if not audio_b64:
-        return None
-    return (
-        f"<audio controls {'autoplay' if autoplay else ''}>"
-        f"<source src='data:audio/mp3;base64,{audio_b64}' type='audio/mpeg'>"
-        "Your browser does not support the audio element."
-        "</audio>"
-    )
+# -----------------------
+# Simple demo / quick test when running module directly
+# -----------------------
+if __name__ == "__main__":
+    cb = CoachBrain()
+    cv = CoachVoice()
+    sample = cb.get_feedback("Knees drifting inward on descent", "Squat", {"reps": 3, "angle": 95})
+    print("Feedback:", sample)
+    audio_b64 = cv.synthesize(sample or "Good job")
+    print("Audio ok:", bool(audio_b64))
