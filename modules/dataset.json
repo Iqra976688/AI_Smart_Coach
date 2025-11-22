@@ -1,0 +1,302 @@
+[
+{
+"exercise": "squat",
+"instructions": [
+"Stand with feet shoulder-width apart.",
+"Keep chest up and back straight.",
+"Lower hips until thighs are parallel to the ground.",
+"Push through heels to stand back up."
+],
+"common_mistakes": [
+"Knees caving inward.",
+"Heels lifting off the ground.",
+"Rounded back.",
+"Shallow depth.",
+"Leaning forward too much.",
+"Not engaging core."
+],
+"corrections": [
+"Push knees outward during descent.",
+"Keep full foot flat on the floor.",
+"Maintain straight spine and lift chest.",
+"Lower hips until thighs reach parallel depth.",
+"Shift weight slightly back and engage glutes.",
+"Tighten core throughout the movement."
+]
+},
+{
+"exercise": "push_up",
+"instructions": [
+"Place hands shoulder-width apart.",
+"Keep body in a straight line from head to heels.",
+"Lower chest near the ground.",
+"Push back to starting position."
+],
+"common_mistakes": [
+"Hips sagging.",
+"Elbows flaring out.",
+"Incomplete range of motion.",
+"Neck craning upward.",
+"Hands too wide or too narrow."
+],
+"corrections": [
+"Tighten core to keep body aligned.",
+"Keep elbows at 45-degree angle.",
+"Lower chest fully and extend arms completely.",
+"Maintain neutral neck position.",
+"Place hands at shoulder-width for stability."
+]
+},
+{
+"exercise": "plank",
+"instructions": [
+"Place forearms on the ground.",
+"Keep body in straight line from head to heels.",
+"Engage core muscles."
+],
+"common_mistakes": [
+"Hips too high or too low.",
+"Neck dropping.",
+"Arched lower back.",
+"Shoulders collapsing.",
+"Holding breath."
+],
+"corrections": [
+"Keep hips level with shoulders.",
+"Maintain neutral neck position.",
+"Brace core to support spine alignment.",
+"Push through forearms and shoulders.",
+"Breathe steadily throughout the hold."
+]
+},
+{
+"exercise": "deadlift",
+"instructions": [
+"Stand with feet hip-width apart.",
+"Hinge at hips while keeping back straight.",
+"Lift weight by extending hips and knees.",
+"Lower with control."
+],
+"common_mistakes": [
+"Rounded back.",
+"Using only lower back.",
+"Bar traveling too far from body.",
+"Shoulders rising first.",
+"Knees locking too early."
+],
+"corrections": [
+"Maintain flat back and neutral spine.",
+"Engage glutes and hamstrings.",
+"Keep bar close to the body throughout lift.",
+"Pull with hips before shoulders.",
+"Bend knees slightly at top and bottom."
+]
+},
+{
+"exercise": "lunge",
+"instructions": [
+"Step forward with one leg.",
+"Lower hips until both knees reach 90 degrees.",
+"Push through front heel to return upright."
+],
+"common_mistakes": [
+"Front knee moving past toes.",
+"Torso leaning forward.",
+"Uneven depth.",
+"Back knee touching floor.",
+"Not engaging glutes."
+],
+"corrections": [
+"Keep knee stacked above ankle.",
+"Maintain upright chest.",
+"Lower until both legs reach proper depth.",
+"Stop just above floor with back knee.",
+"Engage glutes while pushing up."
+]
+},
+{
+"exercise": "shoulder_press",
+"instructions": [
+"Stand or sit upright.",
+"Hold weight at shoulder level.",
+"Extend arms overhead.",
+"Lower back under control."
+],
+"common_mistakes": [
+"Lower back arching.",
+"Elbows flaring excessively.",
+"Partial range of motion.",
+"Pressing too fast.",
+"Not engaging core."
+],
+"corrections": [
+"Engage core to prevent arching.",
+"Keep elbows slightly forward.",
+"Press fully overhead with controlled movement.",
+"Move slowly and steadily.",
+"Maintain tight core throughout."
+]
+},
+{
+"exercise": "bicep_curl",
+"instructions": [
+"Stand straight with weights in hands.",
+"Bend elbows to lift weights upward.",
+"Lower with control."
+],
+"common_mistakes": [
+"Swinging body for momentum.",
+"Elbows drifting forward.",
+"Not fully extending arms.",
+"Wrists bending.",
+"Too fast repetitions."
+],
+"corrections": [
+"Keep upper body stationary.",
+"Pin elbows to your sides.",
+"Use full range of motion.",
+"Keep wrists neutral.",
+"Move slowly for control."
+]
+},
+{
+"exercise": "vertical_jump",
+"instructions": [
+"Feet shoulder-width apart.",
+"Bend knees and swing arms up.",
+"Jump as high as possible."
+],
+"common_mistakes": [
+"Limited knee bend.",
+"No arm swing.",
+"Landing stiffly.",
+"Knees collapsing inward."
+],
+"corrections": [
+"Perform a deeper knee bend before takeoff.",
+"Use full arm swing for momentum.",
+"Land softly with knees slightly bent.",
+"Push knees outward when landing."
+]
+},
+{
+"exercise": "running_step",
+"instructions": [
+"Maintain upright posture.",
+"Drive knees forward.",
+"Land on mid-foot and roll forward."
+],
+"common_mistakes": [
+"Overstriding.",
+"Heel striking aggressively.",
+"Torso leaning back.",
+"Landing heavily."
+],
+"corrections": [
+"Keep stride compact under center of gravity.",
+"Land softly on mid-foot.",
+"Lean slightly forward from ankles.",
+"Absorb impact with knees slightly bent."
+]
+},
+{
+"exercise": "cricket_batting",
+"instructions": [
+"Maintain shoulder-width stance.",
+"Keep eyes on ball.",
+"Swing bat smoothly while transferring weight."
+],
+"common_mistakes": [
+"Front foot not stepping forward.",
+"Hunched shoulders.",
+"Late swing timing.",
+"Poor follow-through."
+],
+"corrections": [
+"Step into the shot for stability.",
+"Keep shoulders relaxed and chest open.",
+"Start swing earlier based on ball speed.",
+"Complete swing fully for accuracy."
+]
+},
+{
+"exercise": "cricket_bowling",
+"instructions": [
+"Approach with controlled speed.",
+"Plant front foot firmly.",
+"Rotate torso and extend arm past release."
+],
+"common_mistakes": [
+"Bent elbow during delivery.",
+"Poor front foot landing.",
+"Low arm angle.",
+"Over-rotating torso."
+],
+"corrections": [
+"Keep arm straight during delivery.",
+"Land front foot with stability.",
+"Increase arm height for accurate delivery.",
+"Rotate torso naturally without straining."
+]
+},
+{
+"exercise": "football_kick",
+"instructions": [
+"Plant non-kicking foot beside the ball.",
+"Swing kicking leg forward.",
+"Follow through toward target."
+],
+"common_mistakes": [
+"No follow-through.",
+"Stepping too far from ball.",
+"Leaning back excessively.",
+"Hitting with side of foot."
+],
+"corrections": [
+"Extend kicking motion naturally after contact.",
+"Place standing foot close to ball.",
+"Lean slightly forward for better control.",
+"Hit with laces for power."
+]
+},
+{
+"exercise": "tennis_swing",
+"instructions": [
+"Rotate shoulders to prepare.",
+"Step toward ball.",
+"Swing racket smoothly through contact."
+],
+"common_mistakes": [
+"No weight transfer.",
+"Stiff wrist.",
+"Late contact point.",
+"Over-rotating torso."
+],
+"corrections": [
+"Shift weight forward during swing.",
+"Keep wrist relaxed for fluid movement.",
+"Make contact slightly in front of body.",
+"Rotate torso naturally without strain."
+]
+},
+{
+"exercise": "physiotherapy_posture_check",
+"instructions": [
+"Maintain neutral spine.",
+"Move slowly and deliberately.",
+"Engage stabilizing muscles."
+],
+"common_mistakes": [
+"Compensating with non-target muscles.",
+"Rushed movements.",
+"Excessive range beyond safe limits.",
+"Holding breath."
+],
+"corrections": [
+"Focus on activating the correct muscles.",
+"Perform movement slowly and with control.",
+"Stay within pain-free range while maintaining alignment.",
+"Breathe steadily."
+]
+}
+]
