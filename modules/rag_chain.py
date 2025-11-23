@@ -39,14 +39,14 @@ class CoachReport:
 # CoachVoice
 # -------------------------------
 class CoachVoice:
-    def __init__(self):
-        pass
+    def __init__(self, lang: str = "en"):
+        self.lang = lang
 
     def synthesize(self, text: str) -> Optional[str]:
         if not text:
             return None
         try:
-            tts = gTTS(text)
+            tts = gTTS(text, lang=self.lang)
             tmp_file = "temp_audio.mp3"
             tts.save(tmp_file)
             with open(tmp_file, "rb") as f:
