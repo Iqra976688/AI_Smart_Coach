@@ -3,11 +3,11 @@ streamlit-webrtc
 opencv-python
 mediapipe
 Pillow
-langchain
+numpy
 sentence-transformers
 faiss-cpu
+langchain
 openai
-gTTS
 pyttsx3
-numpy
+gTTS
 python-dotenv
