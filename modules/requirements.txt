@@ -1,21 +1,13 @@
 streamlit
 streamlit-webrtc
-
-# OpenCV and image/video processing
 opencv-python
 mediapipe
 Pillow
-
-# AI & RAG functionality
 langchain
 sentence-transformers
 faiss-cpu
 openai
-
-# Audio synthesis
 gTTS
 pyttsx3
-
-# Utilities
 numpy
 python-dotenv
