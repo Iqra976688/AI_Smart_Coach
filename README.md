@@ -262,7 +262,10 @@ When the Streamlit dashboard opens in your browser, grant camera permissions. Us
 - Missing AI cues? Confirm `GOOGLE_API_KEY` is set and the `langchain-google-genai` package installed.
 
 ## Clone the Repository
+
+```powershell
 git clone https://github.com/Iqra976688/AI_Smart_Coach
+```
 
 
 ## License
