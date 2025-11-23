@@ -2,12 +2,12 @@ streamlit
 streamlit-webrtc
 opencv-python
 mediapipe
-Pillow
 numpy
-sentence-transformers
-faiss-cpu
-langchain
-openai
 pyttsx3
 gTTS
+faiss-cpu
+sentence-transformers
+langchain
 python-dotenv
+Pillow
+openai
