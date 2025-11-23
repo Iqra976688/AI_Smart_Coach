@@ -15,7 +15,7 @@ from rag_chain import CoachBrain, CoachVoice, CoachReport
 # Initialize AI Coaches
 # -------------------------------
 brain = CoachBrain(dataset_path="./dataset.json", model_name="gpt-4.1-mini")
-voice = CoachVoice(tts_engine="pyttsx3")
+voice = CoachVoice(tts_engine="gTTS")
 
 # Optional Agentic AI fallback
 try:
