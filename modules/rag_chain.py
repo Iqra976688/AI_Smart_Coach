@@ -18,7 +18,6 @@ import numpy as np
 import torch
 from sentence_transformers import SentenceTransformer
 from gtts import gTTS
-import pyttsx3
 
 # Load LLM
 import openai
@@ -40,34 +39,22 @@ class CoachReport:
 # CoachVoice
 # -------------------------------
 class CoachVoice:
-    def __init__(self, tts_engine: str = "pyttsx3"):
-        self.tts_engine = tts_engine
-        if tts_engine == "pyttsx3":
-            self.engine = pyttsx3.init()
-        else:
-            self.engine = None
+    def __init__(self):
+        pass
 
     def synthesize(self, text: str) -> Optional[str]:
         if not text:
             return None
         try:
-            if self.tts_engine == "gTTS":
-                tts = gTTS(text)
-                tmp_file = "temp_audio.mp3"
-                tts.save(tmp_file)
-                with open(tmp_file, "rb") as f:
-                    audio_bytes = f.read()
-                os.remove(tmp_file)
-            else:
-                # pyttsx3 fallback
-                tmp_file = "temp_audio.wav"
-                self.engine.save_to_file(text, tmp_file)
-                self.engine.runAndWait()
-                with open(tmp_file, "rb") as f:
-                    audio_bytes = f.read()
-                os.remove(tmp_file)
+            tts = gTTS(text)
+            tmp_file = "temp_audio.mp3"
+            tts.save(tmp_file)
+            with open(tmp_file, "rb") as f:
+                audio_bytes = f.read()
+            os.remove(tmp_file)
             return base64.b64encode(audio_bytes).decode("utf-8")
-        except Exception:
+        except Exception as e:
+            print("Audio error :", e)
             return None
 
     def audio_tag(self, b64_audio: str):
