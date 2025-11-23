@@ -264,7 +264,7 @@ When the Streamlit dashboard opens in your browser, grant camera permissions. Us
 ## Clone the Repository
 
 ```powershell
-git clone https://github.com/Iqra976688/AI_Smart_Coach
+git clone https://github.com/Iqra976688/AI_Smart_Coach.git
 ```
 
 
