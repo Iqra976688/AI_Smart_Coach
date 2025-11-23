@@ -111,8 +111,8 @@ Checks for:
 
 ## 🕒 **Smart Reminders**
 
-* "Time for your daily workout!"
-* "Don’t forget your knee rehab session."
+* "Try to keep your breath steady."
+* "Stand straight with good posture."
 * "Stretch before sleeping!"
 
 ## 📅 **Streak Tracking**
@@ -152,12 +152,13 @@ Checks for:
 
 * Google Colab
 * Hugging Face Spaces
+* VS Code
 
 ---
 
 # ⚙️ **How the System Is Built**
 
-## 🔸 **Phase 1: Build in Google Colab (Using Videos)**
+## 🔸 **Phase 1: Build in Google Colab (Using Videos or Pictures)**
 
 Because webcam doesn’t work well in Colab, the system is trained and tested using **uploaded videos**, like:
 
@@ -171,18 +172,20 @@ This allows:
 * Clean pose extraction
 * Reliable frame-by-frame testing
 
-## 🔸 **Phase 2: Local & Online Deployment (Webcam Enabled)**
+## 🔸 **Phase 2: Deploy on Huggin Face Space (Using Videos or Pictures)**
 
-Once the model works:
+* bicep_curl.mp4
+* tennis_swing.png
+* physio_knee.png
+  
+## 🔸 **Phase 3: Locally run (Webcam Enabled)**
 
 ### ✔ Run on Local Laptop
 
 * Latest Gradio
 * Webcam works smoothly
 
-### ✔ Deploy on Hugging Face Spaces
 
-* HTTPS support ensures stable webcam
 
 ---
 
@@ -249,13 +252,18 @@ $env:GOOGLE_API_KEY = "your-gemini-key-here"
 streamlit run app.py
 ```
 
-When the Streamlit dashboard opens in your browser, grant camera permissions. Use the sidebar to select movement modes and focus areas. The combined video pane shows the live feed and real-time coaching overlay; the right column lists metrics, cues, and AI audio playback controls.
+When the Streamlit dashboard opens in your browser, grant camera permissions. Use the sidebar to select movement modes. The combined video pane shows the live feed and real-time coaching overlay; the right column lists metrics, cues, and AI audio playback controls.
+
 
 ## Troubleshooting
 
 - If `streamlit` is not recognized, ensure the virtual environment is activated before running commands.
 - For MediaPipe GPU errors on Windows, install the latest Visual C++ redistributables.
 - Missing AI cues? Confirm `GOOGLE_API_KEY` is set and the `langchain-google-genai` package installed.
+
+## Clone the Repository
+git clone https://github.com/Iqra976688/AI_Smart_Coach
+
 
 ## License
 
