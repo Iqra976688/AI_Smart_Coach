@@ -8,6 +8,8 @@ A smart, real-time AI-powered personal trainer that guides **gym exercises**, **
 
 # 🔥 **Key Highlights**
 
+This code is for running the application locally since it has webcam and voice feedback features and cloud spaces don't give direct hardware access.
+
 ## ✅ **Real-Time Posture Analysis**
 
 * Detects joint positions (knees, elbows, shoulders, spine)
